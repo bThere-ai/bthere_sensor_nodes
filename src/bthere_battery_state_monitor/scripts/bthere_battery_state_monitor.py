@@ -69,11 +69,11 @@ def get_battery_charge(input):
 
 
 def get_battery_capacity(input):
-  return float('NaN')
+    return float('NaN')
 
 
 def get_battery_design_capacity(input):
-  return float('NaN')
+    return float('NaN')
 
 
 def get_battery_percentage(input):
@@ -81,39 +81,40 @@ def get_battery_percentage(input):
 
 
 def get_battery_status(input):
-  state = get_named_value(input, 'state')
-  if (state == 'discharging'):
-    return POWER_SUPPLY_STATUS_DISCHARGING
-  elif (state == 'charging'):
-    return POWER_SUPPLY_STATUS_CHARGING
-  elif (state == 'fully-charged'):
-    return POWER_SUPPLY_STATUS_FULL
-  else:
-    return POWER_SUPPLY_STATUS_UNKNOWN
+    state = get_named_value(input, 'state')
+    if (state == 'discharging'):
+        return POWER_SUPPLY_STATUS_DISCHARGING
+    elif (state == 'charging'):
+        return POWER_SUPPLY_STATUS_CHARGING
+    elif (state == 'fully-charged'):
+        return POWER_SUPPLY_STATUS_FULL
+    else:
+        return POWER_SUPPLY_STATUS_UNKNOWN
 
 
 def get_battery_health(input):
-  return POWER_SUPPLY_HEALTH_UNKNOWN
+    return POWER_SUPPLY_HEALTH_UNKNOWN
 
 
 def get_battery_technology(input):
-  tech = get_named_value(input, 'technology')
-  if (tech == 'lithium-ion'):
-    return POWER_SUPPLY_TECHNOLOGY_LION
-  else:
-    return POWER_SUPPLY_TECHNOLOGY_UNKNOWN
+    tech = get_named_value(input, 'technology')
+    if (tech == 'lithium-ion'):
+        return POWER_SUPPLY_TECHNOLOGY_LION
+    else:
+        return POWER_SUPPLY_TECHNOLOGY_UNKNOWN
 
 
 def get_battery_presence(input):
-  return True
+    return True
 
 
 def get_battery_cell_voltage(input):
-  return [float('NaN'), float('NaN'), float('NaN')]
+    return [float('NaN'), float('NaN'), float('NaN')]
 
 
 def get_battery_serial_number(input):
-  return get_named_value(input, 'serial')
+    return get_named_value(input, 'serial')
+
 
 def get_battery_is_charging(input):
     return False if (get_named_value(input, 'state') == 'discharging') else True
@@ -157,41 +158,47 @@ def battery_level_monitor():
             for line in lines:
                 if (line.find('battery') != -1):
                     battery_uri = line
+                    battery_found = True
 
-            # Get the battery information
-            cmd_output = os.popen('upower -i ' + battery_uri).read()
+            if(battery_found):
+                # Get the battery information
+                cmd_output = os.popen('upower -i ' + battery_uri).read()
 
-            battery_state = BatteryState()
-            battery_state.voltage = get_battery_voltage(cmd_output)
-            battery_state.current = get_battery_current(cmd_output)
-            battery_state.charge = get_battery_charge(cmd_output)
-            battery_state.capacity = get_battery_capacity(cmd_output)
-            battery_state.design_capacity = get_battery_design_capacity(cmd_output)
-            battery_state.percentage = get_battery_percentage(cmd_output)
-            battery_state.power_supply_status = get_battery_status(cmd_output)
-            battery_state.power_supply_health = get_battery_health(cmd_output)
-            battery_state.power_supply_technology = get_battery_technology(cmd_output)
-            battery_state.present = get_battery_presence(cmd_output)
-            battery_state.cell_voltage = get_battery_cell_voltage(cmd_output)
-            battery_state.location = get_battery_path(cmd_output)
-            battery_state.serial_number = get_battery_serial_number(cmd_output)
+                battery_state = BatteryState()
+                battery_state.voltage = get_battery_voltage(cmd_output)
+                battery_state.current = get_battery_current(cmd_output)
+                battery_state.charge = get_battery_charge(cmd_output)
+                battery_state.capacity = get_battery_capacity(cmd_output)
+                battery_state.design_capacity = get_battery_design_capacity(cmd_output)
+                battery_state.percentage = get_battery_percentage(cmd_output)
+                battery_state.power_supply_status = get_battery_status(cmd_output)
+                battery_state.power_supply_health = get_battery_health(cmd_output)
+                battery_state.power_supply_technology = get_battery_technology(cmd_output)
+                battery_state.present = get_battery_presence(cmd_output)
+                battery_state.cell_voltage = get_battery_cell_voltage(cmd_output)
+                battery_state.location = get_battery_path(cmd_output)
+                battery_state.serial_number = get_battery_serial_number(cmd_output)
 
-            loginfo('------ Battery State --------------')
-            loginfo('Voltage (V): %f' % battery_state.voltage)
-            loginfo('Current (A): %f' % battery_state.current)
-            loginfo('Charge (Ah): %f' % battery_state.charge)
-            loginfo('Capacity (Ah): %f' % battery_state.capacity)
-            loginfo('Design capacity (Ah): %f' % battery_state.design_capacity)
-            loginfo('Percentage (%%): %f' % battery_state.percentage)
-            loginfo('Power supply status: %d' % battery_state.power_supply_status)
-            loginfo('Power supply health: %d' % battery_state.power_supply_health)
-            loginfo('Power supply technology: %d' % battery_state.power_supply_technology)
-            loginfo('Battery present: %r' % battery_state.present)
-            loginfo('Cell-voltage: %s' % str(battery_state.cell_voltage)[1:-1])
-            loginfo('Location: %s' % battery_state.location)
-            loginfo('Serial number: %s' % battery_state.serial_number)
+                loginfo('------ Battery State --------------')
+                loginfo('Voltage (V): %f' % battery_state.voltage)
+                loginfo('Current (A): %f' % battery_state.current)
+                loginfo('Charge (Ah): %f' % battery_state.charge)
+                loginfo('Capacity (Ah): %f' % battery_state.capacity)
+                loginfo('Design capacity (Ah): %f' % battery_state.design_capacity)
+                loginfo('Percentage (%%): %f' % battery_state.percentage)
+                loginfo('Power supply status: %d' % battery_state.power_supply_status)
+                loginfo('Power supply health: %d' % battery_state.power_supply_health)
+                loginfo('Power supply technology: %d' % battery_state.power_supply_technology)
+                loginfo('Battery present: %r' % battery_state.present)
+                loginfo('Cell-voltage: %s' % str(battery_state.cell_voltage)[1:-1])
+                loginfo('Location: %s' % battery_state.location)
+                loginfo('Serial number: %s' % battery_state.serial_number)
 
-            pub.publish(battery_state)
+                pub.publish(battery_state)
+
+            else:
+                loginfo('------ Battery State --------------')
+                loginfo('No battery found!')
 
         rate.sleep()
 
