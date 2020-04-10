@@ -1,7 +1,7 @@
 <launch>
   <arg name="update_period" default="10.0" />
 
-  <node name="wifi_signal_monitor" pkg="wifi_signal_monitor" type="wifi_signal_monitor.py" output="screen">
+  <node name="bthere_wifi_signal_monitor" pkg="bthere_wifi_signal_monitor" type="bthere_wifi_signal_monitor.py" output="screen">
     <param name="update_period" value="$(arg update_period)" />
   </node>
 </launch>

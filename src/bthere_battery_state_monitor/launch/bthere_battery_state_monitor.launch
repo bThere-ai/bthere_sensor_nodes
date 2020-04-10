@@ -1,0 +1,7 @@
+<launch>
+  <arg name="bthere_battery_state_update_period" default="10.0" />
+
+  <node name="bthere_battery_state_monitor" pkg="bthere_battery_state_monitor" type="bthere_battery_state_monitor.py" output="screen">
+    <param name="update_period" value="$(arg bthere_battery_state_update_period)" />
+  </node>
+</launch>

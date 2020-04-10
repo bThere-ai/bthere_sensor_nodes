@@ -5,8 +5,8 @@ from std_msgs.msg import Int32
 
 
 def wifi_signal_monitor():
-    init_node('wifi_signal_monitor', anonymous=False)
-    pub = Publisher('wifi_signal', Int32, queue_size=10)
+    init_node('bthere_wifi_signal_monitor', anonymous=False)
+    pub = Publisher('/bthere/wifi_signal', Int32, queue_size=10)
 
     # update parameters from parameter server or use default values
     update_period = get_param('~update_period', 2)
@@ -33,6 +33,7 @@ def wifi_signal_monitor():
                 signal_level = line[index:].split('=')[1].split()[0]
 
                 # Log and publish the wifi signal value
+                loginfo('---------- Wifi Signal ------------')
                 loginfo('Signal Level: ' + signal_level + ' dBm')
                 pub.publish(int(signal_level))
 

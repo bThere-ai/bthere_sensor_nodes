@@ -139,8 +139,8 @@ def get_battery_duration(input):
 
 
 def battery_level_monitor():
-    init_node('battery_level_monitor', anonymous=False)
-    pub = Publisher('battery_level', BatteryState, queue_size=10)
+    init_node('bthere_battery_state_monitor', anonymous=False)
+    pub = Publisher('/bthere/battery_state', BatteryState, queue_size=10)
 
     # update parameters from parameter server or use default values
     update_period = get_param('~update_period', 10)
@@ -176,7 +176,7 @@ def battery_level_monitor():
             battery_state.location = get_battery_path(cmd_output)
             battery_state.serial_number = get_battery_serial_number(cmd_output)
 
-            loginfo('---------------------')
+            loginfo('------ Battery State --------------')
             loginfo('Voltage (V): %f' % battery_state.voltage)
             loginfo('Current (A): %f' % battery_state.current)
             loginfo('Charge (Ah): %f' % battery_state.charge)
