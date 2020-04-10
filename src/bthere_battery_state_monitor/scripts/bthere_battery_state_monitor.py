@@ -151,7 +151,8 @@ def battery_level_monitor():
     while not is_shutdown():
 
         if (is_tool_present('upower')):
-
+            battery_found = False
+            
             # Get the battery uri
             cmd_output = os.popen('upower -e').read()
             lines = cmd_output.splitlines()
