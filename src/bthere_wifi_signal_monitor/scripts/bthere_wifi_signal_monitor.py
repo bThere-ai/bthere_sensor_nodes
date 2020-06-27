@@ -2,9 +2,10 @@
 from rospy import init_node, loginfo, get_param, Publisher, Rate, is_shutdown, ROSInterruptException
 import os
 from std_msgs.msg import Int32
+import sys
 
 
-def wifi_signal_monitor():
+def wifi_signal_monitor(test_output):
     init_node('bthere_wifi_signal_monitor', anonymous=False)
     pub = Publisher('/bthere/wifi_signal', Int32, queue_size=10)
 
@@ -15,33 +16,44 @@ def wifi_signal_monitor():
 
     while not is_shutdown():
 
-        # Get power using iwconfig
+        if (test_output is None):
+            # Get power using iwconfig
 
-        # Get the active network connection
-        cmd_output = os.popen('nmcli dev status').read()
-        lines = cmd_output.splitlines()
-        for line in lines:
-            if (line.find('wifi') != -1) and (line.find('connected') != -1):
-                interface = line.split()[0]
+            # Get the active network connection
+            cmd_output = os.popen('nmcli dev status').read()
+            lines = cmd_output.splitlines()
+            for line in lines:
+                if (line.find('wifi') != -1) and (line.find('connected') != -1):
+                    interface = line.split()[0]
 
-        # Get the signal level
-        cmd_output = os.popen('iwconfig ' + interface).read()
-        lines = cmd_output.splitlines()
-        for line in lines:
-            if (line.find('Signal level') != -1):
-                index = line.find('Signal level')
-                signal_level = line[index:].split('=')[1].split()[0]
+            # Get the signal level
+            cmd_output = os.popen('iwconfig ' + interface).read()
+            lines = cmd_output.splitlines()
+            for line in lines:
+                if (line.find('Signal level') != -1):
+                    index = line.find('Signal level')
+                    signal_level = line[index:].split('=')[1].split()[0]
 
-                # Log and publish the wifi signal value
-                loginfo('---------- Wifi Signal ------------')
-                loginfo('Signal Level: ' + signal_level + ' dBm')
-                pub.publish(int(signal_level))
+                    # Log and publish the wifi signal value
+                    loginfo('---------- Wifi Signal ------------')
+                    loginfo('Signal Level: ' + signal_level + ' dBm')
+                    pub.publish(int(signal_level))
+        else:
+            loginfo('Emitting test_output: ' + test_output)
+            pub.publish(int(test_output))
 
         rate.sleep()
 
 
 if __name__ == "__main__":
     try:
-        wifi_signal_monitor()
+        arg = None
+        if (len(sys.argv) > 1):
+            if (sys.argv[1].startswith("test_output=")):
+                parts = sys.argv[1].split("=")
+                if (len(parts) > 1):
+                    arg = parts[1]
+                    loginfo('Using test_output: ' + arg)
+        wifi_signal_monitor(test_output=arg)
     except ROSInterruptException:
         pass
