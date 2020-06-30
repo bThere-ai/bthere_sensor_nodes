@@ -2,6 +2,7 @@
 from rospy import init_node, loginfo, get_param, Publisher, Rate, is_shutdown, ROSInterruptException, Duration
 from sensor_msgs.msg import BatteryState
 import os
+import argparse
 
 
 # Power supply status constants
@@ -139,20 +140,15 @@ def get_battery_duration(input):
     return duration
 
 
-def battery_level_monitor():
-    init_node('bthere_battery_state_monitor', anonymous=False)
-    pub = Publisher('/bthere/battery_state', BatteryState, queue_size=10)
-
-    # update parameters from parameter server or use default values
-    update_period = get_param('~update_period', 10)
-    rate = Rate(1/float(update_period))
-    loginfo('Publishing rate: ' + str(1/float(update_period)) + 'hz')
-
-    while not is_shutdown():
-
+def get_battery_info(test_input_file):
+    battery_info = None
+    if (test_input_file):
+        test_file = open(args.test_input_file, 'r')
+        battery_info = test_file.read()
+        # print(battery_info)
+    else:
         if (is_tool_present('upower')):
             battery_found = False
-            
             # Get the battery uri
             cmd_output = os.popen('upower -e').read()
             lines = cmd_output.splitlines()
@@ -160,52 +156,123 @@ def battery_level_monitor():
                 if (line.find('battery') != -1):
                     battery_uri = line
                     battery_found = True
-
             if(battery_found):
                 # Get the battery information
-                cmd_output = os.popen('upower -i ' + battery_uri).read()
+                battery_info = os.popen('upower -i ' + battery_uri).read()
+    return battery_info
 
-                battery_state = BatteryState()
-                battery_state.voltage = get_battery_voltage(cmd_output)
-                battery_state.current = get_battery_current(cmd_output)
-                battery_state.charge = get_battery_charge(cmd_output)
-                battery_state.capacity = get_battery_capacity(cmd_output)
-                battery_state.design_capacity = get_battery_design_capacity(cmd_output)
-                battery_state.percentage = get_battery_percentage(cmd_output)
-                battery_state.power_supply_status = get_battery_status(cmd_output)
-                battery_state.power_supply_health = get_battery_health(cmd_output)
-                battery_state.power_supply_technology = get_battery_technology(cmd_output)
-                battery_state.present = get_battery_presence(cmd_output)
-                battery_state.cell_voltage = get_battery_cell_voltage(cmd_output)
-                battery_state.location = get_battery_path(cmd_output)
-                battery_state.serial_number = get_battery_serial_number(cmd_output)
 
-                loginfo('------ Battery State --------------')
-                loginfo('Voltage (V): %f' % battery_state.voltage)
-                loginfo('Current (A): %f' % battery_state.current)
-                loginfo('Charge (Ah): %f' % battery_state.charge)
-                loginfo('Capacity (Ah): %f' % battery_state.capacity)
-                loginfo('Design capacity (Ah): %f' % battery_state.design_capacity)
-                loginfo('Percentage (%%): %f' % battery_state.percentage)
-                loginfo('Power supply status: %d' % battery_state.power_supply_status)
-                loginfo('Power supply health: %d' % battery_state.power_supply_health)
-                loginfo('Power supply technology: %d' % battery_state.power_supply_technology)
-                loginfo('Battery present: %r' % battery_state.present)
-                loginfo('Cell-voltage: %s' % str(battery_state.cell_voltage)[1:-1])
-                loginfo('Location: %s' % battery_state.location)
-                loginfo('Serial number: %s' % battery_state.serial_number)
+def gated_loginfo(quiet, msg):
+    if (not quiet):
+        loginfo(msg)
 
-                pub.publish(battery_state)
 
-            else:
-                loginfo('------ Battery State --------------')
-                loginfo('No battery found!')
+def battery_level_monitor(test_input_file, quiet, update_period):
+    init_node('bthere_battery_state_monitor', anonymous=False)
+    pub = Publisher('/bthere/battery_state', BatteryState, queue_size=10)
+
+    rate = Rate(1/float(update_period))
+    loginfo('Publishing rate: ' + str(1/float(update_period)) + 'hz')
+
+    while not is_shutdown():
+
+        # if (is_tool_present('upower')):
+        #     battery_found = False
+
+        #     # Get the battery uri
+        #     cmd_output = os.popen('upower -e').read()
+        #     lines = cmd_output.splitlines()
+        #     for line in lines:
+        #         if (line.find('battery') != -1):
+        #             battery_uri = line
+        #             battery_found = True
+
+        #     if(battery_found):
+        #         # Get the battery information
+        #         cmd_output = os.popen('upower -i ' + battery_uri).read()
+        cmd_output = get_battery_info(test_input_file)
+        if (cmd_output is not None):
+            battery_state = BatteryState()
+            battery_state.voltage = get_battery_voltage(cmd_output)
+            battery_state.current = get_battery_current(cmd_output)
+            battery_state.charge = get_battery_charge(cmd_output)
+            battery_state.capacity = get_battery_capacity(cmd_output)
+            battery_state.design_capacity = get_battery_design_capacity(
+                cmd_output)
+            battery_state.percentage = get_battery_percentage(cmd_output)
+            battery_state.power_supply_status = get_battery_status(
+                cmd_output)
+            battery_state.power_supply_health = get_battery_health(
+                cmd_output)
+            battery_state.power_supply_technology = get_battery_technology(
+                cmd_output)
+            battery_state.present = get_battery_presence(cmd_output)
+            battery_state.cell_voltage = get_battery_cell_voltage(
+                cmd_output)
+            battery_state.location = get_battery_path(cmd_output)
+            battery_state.serial_number = get_battery_serial_number(
+                cmd_output)
+
+            gated_loginfo(quiet, '------ Battery State --------------')
+            gated_loginfo(quiet, 'Voltage (V): %f' % battery_state.voltage)
+            gated_loginfo(quiet, 'Current (A): %f' % battery_state.current)
+            gated_loginfo(quiet, 'Charge (Ah): %f' % battery_state.charge)
+            gated_loginfo(quiet, 'Capacity (Ah): %f' %
+                          battery_state.capacity)
+            gated_loginfo(quiet, 'Design capacity (Ah): %f' %
+                          battery_state.design_capacity)
+            gated_loginfo(quiet, 'Percentage (%%): %f' %
+                          battery_state.percentage)
+            gated_loginfo(quiet, 'Power supply status: %d' %
+                          battery_state.power_supply_status)
+            gated_loginfo(quiet, 'Power supply health: %d' %
+                          battery_state.power_supply_health)
+            gated_loginfo(quiet, 'Power supply technology: %d' %
+                          battery_state.power_supply_technology)
+            gated_loginfo(quiet, 'Battery present: %r' %
+                          battery_state.present)
+            gated_loginfo(quiet, 'Cell-voltage: %s' %
+                          str(battery_state.cell_voltage)[1:-1])
+            gated_loginfo(quiet, 'Location: %s' % battery_state.location)
+            gated_loginfo(quiet, 'Serial number: %s' %
+                          battery_state.serial_number)
+
+            pub.publish(battery_state)
+
+        else:
+            gated_loginfo(quiet, '------ Battery State --------------')
+            gated_loginfo(quiet, 'No battery found!')
 
         rate.sleep()
 
 
 if __name__ == "__main__":
+    # parse the command line arguments
+    parser = argparse.ArgumentParser(description="bthere_battery_state_monitor",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--test_input_file", dest="test_input_file",
+                        help="Input file to use for battery state rather than querying the system")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--quiet", dest="quiet", action='store_true',
+                       help="Disable printing to standard out")
+    group.add_argument("--chatty", dest="quiet", action='store_false',
+                       help="Enable printing to standard out")
+    parser.set_defaults(quiet=False)
+    parser.add_argument("--update_period", dest="update_period", default=get_param('~update_period', 10),
+                        help="Seconds between updates. Type is float.", type=float)
+    args = parser.parse_args()
+    test_file = None
+    if (args.test_input_file is not None):
+        if not os.path.exists(args.test_input_file):
+            print("The file %s does not exist!" % args.test_input_file)
+            exit()
+
+    print("Run with --help to get usage info")
+
+    print(args)
+
     try:
-        battery_level_monitor()
+        battery_level_monitor(test_input_file=args.test_input_file,
+                              quiet=args.quiet, update_period=args.update_period)
     except ROSInterruptException:
         pass
