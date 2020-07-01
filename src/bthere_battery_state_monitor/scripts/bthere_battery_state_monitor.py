@@ -63,27 +63,25 @@ def get_battery_voltage(input):
 
 
 def get_battery_current(input):
+    current = float('NaN')
     value = get_named_value(input, 'energy-rate')
     if (value is not None):
         energy_rate = value.split()[0]
         voltage = get_battery_voltage(input)
-        if (voltage is None):
-            float('Nan')
-        return float(energy_rate) / voltage
-    else:
-        return float('Nan')
+        if (voltage is not None):
+            current = float(energy_rate) / voltage
+    return current
 
 
 def get_battery_charge(input):
+    charge = float('NaN')
     value = get_named_value(input, 'energy')
     if (value is not None):
         energy = value.split()[0]
         voltage = get_battery_voltage(input)
-        if (voltage is None):
-            float('Nan')
-        return float(energy) / voltage
-    else:
-        return float('NaN')
+        if (voltage is not None):
+            charge = float(energy) / voltage
+    return charge
 
 
 def get_battery_capacity(input):
@@ -143,9 +141,8 @@ def get_battery_is_charging(input):
     value = get_named_value(input, 'state')
     return False if (value == 'discharging') else True
 
+
 # Not currently used
-
-
 def get_battery_duration(input):
     # First get the battery state
     time_remaining_str = '0 hours'
