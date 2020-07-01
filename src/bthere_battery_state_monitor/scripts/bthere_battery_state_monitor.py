@@ -3,7 +3,7 @@ from rospy import init_node, loginfo, get_param, Publisher, Rate, is_shutdown, R
 from sensor_msgs.msg import BatteryState
 import os
 import argparse
-
+import sys
 
 # Power supply status constants
 POWER_SUPPLY_STATUS_UNKNOWN = 0
@@ -142,8 +142,8 @@ def get_battery_duration(input):
 
 def get_battery_info(test_input_file):
     battery_info = None
-    if (test_input_file):
-        test_file = open(args.test_input_file, 'r')
+    if (test_input_file is not None and len(test_input_file) > 0):
+        test_file = open(test_input_file, 'r')
         battery_info = test_file.read()
         # print(battery_info)
     else:
@@ -167,29 +167,26 @@ def gated_loginfo(quiet, msg):
         loginfo(msg)
 
 
-def battery_level_monitor(test_input_file, quiet, update_period):
+def check_if_test_input_exists(filename):
+    if (filename is not None and len(filename) > 0):
+        if not os.path.exists(filename):
+            print("The file %s does not exist!" % filename)
+            exit()
+    loginfo("File exists: %s" % filename)
+
+
+def battery_level_monitor():
     init_node('bthere_battery_state_monitor', anonymous=False)
     pub = Publisher('/bthere/battery_state', BatteryState, queue_size=10)
+    test_input_file = get_param('~test_input_file', None)
+    update_period = get_param('~update_period', 10.0)
+    quiet = get_param('~quiet', False)
 
     rate = Rate(1/float(update_period))
     loginfo('Publishing rate: ' + str(1/float(update_period)) + 'hz')
 
     while not is_shutdown():
 
-        # if (is_tool_present('upower')):
-        #     battery_found = False
-
-        #     # Get the battery uri
-        #     cmd_output = os.popen('upower -e').read()
-        #     lines = cmd_output.splitlines()
-        #     for line in lines:
-        #         if (line.find('battery') != -1):
-        #             battery_uri = line
-        #             battery_found = True
-
-        #     if(battery_found):
-        #         # Get the battery information
-        #         cmd_output = os.popen('upower -i ' + battery_uri).read()
         cmd_output = get_battery_info(test_input_file)
         if (cmd_output is not None):
             battery_state = BatteryState()
@@ -246,33 +243,28 @@ def battery_level_monitor(test_input_file, quiet, update_period):
         rate.sleep()
 
 
+def print_help():
+    print("Usage: bthere_wifi_signal_monitor [OPTIONS]")
+    print("   -h, --help                   this message")
+    print("   __log:=FILENAME              the file that the node's log file should be written")
+    print("   __name:=NAME                 the name of the node")
+    print(
+        "   _quiet:={true|false}         suppresses printing of samples to std out. Default is false")
+    print("   _test_input_file:=FILENAME   file to use for mock battery info")
+    print("   _update_period:=DOUBLE       seconds between updates. Default is 10.0")
+
+
+def check_for_help_request(argv):
+    if (len(argv) > 1 and argv[1] == "--help"):
+        print_help()
+        exit()
+    else:
+        print("Run with --help to get usage info")
+
+
 if __name__ == "__main__":
-    # parse the command line arguments
-    parser = argparse.ArgumentParser(description="bthere_battery_state_monitor",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--test_input_file", dest="test_input_file",
-                        help="Input file to use for battery state rather than querying the system")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--quiet", dest="quiet", action='store_true',
-                       help="Disable printing to standard out")
-    group.add_argument("--chatty", dest="quiet", action='store_false',
-                       help="Enable printing to standard out")
-    parser.set_defaults(quiet=False)
-    parser.add_argument("--update_period", dest="update_period", default=get_param('~update_period', 10),
-                        help="Seconds between updates. Type is float.", type=float)
-    args = parser.parse_args()
-    test_file = None
-    if (args.test_input_file is not None):
-        if not os.path.exists(args.test_input_file):
-            print("The file %s does not exist!" % args.test_input_file)
-            exit()
-
-    print("Run with --help to get usage info")
-
-    print(args)
-
+    check_for_help_request(sys.argv)
     try:
-        battery_level_monitor(test_input_file=args.test_input_file,
-                              quiet=args.quiet, update_period=args.update_period)
+        battery_level_monitor()
     except ROSInterruptException:
         pass
