@@ -202,6 +202,7 @@ def check_if_test_input_exists(filename):
 def battery_level_monitor():
     init_node('bthere_battery_state_monitor', anonymous=False)
     pub = Publisher('/bthere/battery_state', BatteryState, queue_size=10)
+    loginfo('Outputting to /bthere/battery_state')
     test_input_file = get_param('~test_input_file', None)
     update_period = get_param('~update_period', 10.0)
     quiet = get_param('~quiet', False)
