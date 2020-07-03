@@ -12,7 +12,7 @@ def publish(pub, signal_level, quiet):
     # Log and publish the wifi signal value
     if (not quiet):
         loginfo('---------- Wifi Signal ------------')
-        loginfo('Signal Level: ' + signal_level + ' dBm')
+        loginfo('Signal Level: ' + str(signal_level) + ' dBm')
     pub.publish(int(signal_level))
 
 
@@ -48,6 +48,7 @@ def output_test_data(rate, pub, quiet):
 def wifi_signal_monitor():
     init_node('bthere_wifi_signal_monitor', anonymous=False)
     pub = Publisher('/bthere/wifi_signal', Int32, queue_size=10)
+    loginfo('Outputting to /bthere/wifi_signal')
     test_output = get_param('~test_output', False)
     update_period = get_param('~update_period', 15.0)
     quiet = get_param('~quiet', False)
