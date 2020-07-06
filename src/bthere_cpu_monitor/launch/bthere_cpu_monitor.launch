@@ -1,8 +1,4 @@
 <launch>
-  <!-- note: I don't really know much about these launch files. This is copy-pasted and modified from -->
-  <!-- bthere_battery_state_monitor.launch. -->
-  <arg name="bthere_cpu_update_period" default="1.0" />
-
   <node name="bthere_cpu_monitor" pkg="bthere_cpu_monitor" type="bthere_cpu_monitor.py" output="screen">
     <param name="update_period" value="$(arg bthere_cpu_update_period)" />
   </node>
