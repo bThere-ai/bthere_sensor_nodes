@@ -1,5 +1,5 @@
 <launch>
-  <node name="bthere_cpu_monitor" pkg="bthere_cpu_monitor" type="bthere_cpu_monitor.py" output="screen">
+  <node name="bthere_cpu_data_publisher" pkg="bthere_cpu_monitor" type="bthere_cpu_data_publisher.py" output="screen">
     <param name="update_period" value="$(arg bthere_cpu_update_period)" />
   </node>
 </launch>

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+#renamed from bthere_cpu_monitor.py because of package name conflict
+#in the CPUData message import.
+
 from rospy import init_node, loginfo, logerr, ROSInterruptException, Publisher, Rate, is_shutdown, get_param, Time
-from CPUData.msg import CPUData
+from bthere_cpu_monitor.msg import CPUData
 from os import listdir
 from glob import glob
 
@@ -66,9 +69,11 @@ def get_cpu_load(last_cpu_times):
         idle = float(difference[3]) / float(sum(difference)) # %/100 of time since startup spent in an "idle" state
         load = 1 - idle # %/100 of time since startup spent not idle, i.e. 
         if(line_index == 0):
-            overall = round(load, 3)
+            #note: rounding removed because it seemed that a lot of error would arise when actually sending and receiving the messages,
+            #      so doing so was basically pointless.
+            overall = load
         else:
-            per_core.append(round(load, 3)) #these values are probably not _super_ precise, so rounding to the nearest 10th seems about right?
+            per_core.append(load)
     return (overall, per_core, new_cpu_times)
 
 #returns a 2d list of strings where each element is a list times spent in various stats since startup, measured in USER_HZ (usually 10ms).
@@ -117,7 +122,8 @@ def cpu_monitor():
             last_cpu_times = get_load_data()
         else:
             overall_load, per_cores, last_cpu_times = get_cpu_load(last_cpu_times)
-            data.overall_cpu_load = cpu_load
+            data.overall_cpu_load = overall_load
+            data.core_loads = per_cores
         data.timestamp = Time.now()
         pub.publish(data)
         rate.sleep()
