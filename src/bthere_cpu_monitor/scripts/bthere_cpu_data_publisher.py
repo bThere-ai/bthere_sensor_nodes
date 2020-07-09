@@ -7,10 +7,11 @@ from rospy import init_node, loginfo, logerr, ROSInterruptException, Publisher, 
 from bthere_cpu_monitor.msg import CPUData
 from os import listdir
 from glob import glob
+from math import isnan
 
 #returns: a tuple of type (float, float[]) where the the first element is CPU package (overall) temperature 
 #         in degrees C, and the second element is a list of per-core CPU temperatures (also deg. C).
-#         Will return None if an error is encountered.
+#         Will return (NaN, []) if an error is encountered.
 #
 #note: this function is dependent on the numbering of the files in the directory for the cpu in 
 # /sys/class/hwmon/ being consistent, which they may not be.
@@ -50,7 +51,7 @@ def get_cpu_temps():
         return (package_temp, core_temps)
     except: #there is a lot of stuff that can break in the above block...
         logerr("unable to get CPU temperature data")
-        return None
+        return (float("NaN"), []) #was previously None; had to be changed because it must be serializable as a float.
 
 #parameters: last_cpu_times: a 2d list of strings, as produced by get_load_data(). used to calculate a
 #           change since the last call.
@@ -74,7 +75,11 @@ def get_cpu_load(last_cpu_times):
             overall = load
         else:
             per_core.append(load)
-    return (overall, per_core, new_cpu_times)
+    #if block added to prevent issues with serializing None as a float
+    if(overall != None):
+        return (overall, per_core, new_cpu_times)
+    else:
+        return (float("NaN"), [], new_cpu_times)
 
 #returns a 2d list of strings where each element is a list times spent in various stats since startup, measured in USER_HZ (usually 10ms).
 # The first element is for the system overall, subsequent elements are for specific cores, in order.
@@ -95,7 +100,7 @@ def get_load_data():
 def cpu_monitor():
     init_node("bthere_cpu_monitor", anonymous=False)
     pub = Publisher("/bthere/cpu_data", CPUData, queue_size=10)
-    
+
     #update period should to be somewhat small since the cpu load data is average since you last checked,
     #a slower update rate will be less accurate for bursty loads and may introduce more lag than expected
     #if a load is added later in the time between updates for example.
@@ -104,7 +109,7 @@ def cpu_monitor():
 
     #since the temperature-getting seems likely to be failure prone, try it once to check.
     able_to_get_temps = False
-    if(get_cpu_temps() != None):
+    if(isnan(get_cpu_temps()[0])):
         able_to_get_temps = True
     
     last_cpu_times = []
