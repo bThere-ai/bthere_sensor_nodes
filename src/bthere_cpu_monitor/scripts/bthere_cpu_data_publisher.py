@@ -3,7 +3,7 @@
 #renamed from bthere_cpu_monitor.py because of package name conflict
 #in the CPUData message import.
 
-from rospy import init_node, loginfo, logerr, ROSInterruptException, Publisher, Rate, is_shutdown, get_param, Time
+from rospy import init_node, loginfo, logerr, logwarn, ROSInterruptException, Publisher, Rate, is_shutdown, get_param, Time
 from bthere_cpu_monitor.msg import CPUData
 from os import listdir
 from glob import glob
@@ -97,27 +97,41 @@ def get_load_data():
     proc_stat.close()
     return ret
 
+def gated_loginfo(quiet, msg):
+    if(not quiet):
+        loginfo(msg)
+
 def cpu_monitor():
     init_node("bthere_cpu_monitor", anonymous=False)
     pub = Publisher("/bthere/cpu_data", CPUData, queue_size=10)
-
+    loginfo("Outputting to /bthere/cpu_data")
+    
     #update period should to be somewhat small since the cpu load data is average since you last checked,
     #a slower update rate will be less accurate for bursty loads and may introduce more lag than expected
     #if a load is added later in the time between updates for example.
     update_period = get_param('~update_period', 1.0)
     rate = Rate(1/float(update_period))
+    loginfo("Publishing rate: " + str(1.0/update_period) + " hz")
+
+    quiet = get_param("~quiet", False)
 
     #since the temperature-getting seems likely to be failure prone, try it once to check.
-    able_to_get_temps = False
+    able_to_get_temps = True
     if(isnan(get_cpu_temps()[0])):
-        able_to_get_temps = True
+        logwarn("Unable to get CPU temperatures")
+        able_to_get_temps = False
     
     last_cpu_times = []
     while not is_shutdown():
         data = CPUData()
+        gated_loginfo(quiet, "------ CPU Data ------")
         if(able_to_get_temps):
             package_temp, core_temps = get_cpu_temps()
+            gated_loginfo(quiet, "CPU Package temp. (C): " + str(package_temp))
             data.package_temp = package_temp
+            if(len(core_temps) > 0):
+                for core in range(len(core_temps)):
+                    gated_loginfo(quiet, "CPU Core " + str(core) + "temp. (C): " + str(core_temps[core]))
             data.core_temps = core_temps
         else:
             #data is unavailable so just make it NaN
@@ -127,7 +141,11 @@ def cpu_monitor():
             last_cpu_times = get_load_data()
         else:
             overall_load, per_cores, last_cpu_times = get_cpu_load(last_cpu_times)
+            gated_loginfo(quiet, "Overall CPU load: " + str(round(overall_load * 100, 1)) + "%")
             data.overall_cpu_load = overall_load
+            if(len(per_cores) > 0):
+                for core in range(len(per_cores)):
+                    gated_loginfo(quiet, "CPU core " + str(core) + " load: " + str(round(per_cores[core] * 100, 1)) + "%")
             data.core_loads = per_cores
         data.timestamp = Time.now()
         pub.publish(data)
