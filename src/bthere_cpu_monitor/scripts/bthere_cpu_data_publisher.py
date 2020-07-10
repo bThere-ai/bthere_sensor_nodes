@@ -85,10 +85,12 @@ def get_cpu_load(last_cpu_times):
         from calling get_load_data() to be used for the next call of this function.
     """
 
-
     new_cpu_times = get_load_data()
     overall = None
     per_core = []
+    # To get loads, find the difference between the current CPU times since startup and the old ones, then find what
+    # percent those times overall and per core as spent not idle, i.e. under load. This could be done faster with 
+    # something like numpy, but that would add a (debatably) unnecessary dependency.
     for line_index in range(0, len(last_cpu_times)):
         difference = []
         for i in range(0, len(last_cpu_times[0])):
