@@ -66,7 +66,7 @@ def get_cpu_temps(architecture):
                 label_file.close()
             return (package_temp, core_temps)
         elif(architecture == "aarch64"):
-            temperature_file = open(cpu_hwmon_path + "temp1_input", "r")
+            temperature_file = open(cpu_hwmon_path + "/temp1_input", "r")
             temperature = float(temperature_file.read().strip()) / 1000
             temperature_file.close()
             return (temperature, [])
