@@ -19,8 +19,10 @@ def get_hwmon_dir(architecture):
     hwmons = listdir("/sys/class/hwmon")
     for hwmon in hwmons:
             name_file = open("/sys/class/hwmon/" + hwmon + "/name")
-            name = name_file.read()
-            if(name == ("coretemp" if architecture "x86_64" else "cpu_thermal")):
+            name = name_file.read().strip()
+            if(name == "coretemp" or name == "cpu_thermal"): 
+                # The name file seems to always be "coretemp" on amd64 and cpu_thermal on a raspberry pi 3.
+                # This check might not be portable to all systems- more testing and/or research might be necessary.
                 name_file.close()
                 return "/sys/class/hwmon/" + hwmon
             name_file.close()
@@ -68,6 +70,12 @@ def get_cpu_temps(architecture):
             temperature = float(temperature_file.read().strip()) / 1000
             temperature_file.close()
             return (temperature, [])
+        else: 
+            # This should be unreachable because of the architecture chech in cpu_monitor(), but just in case things 
+            # break this happens, an error message is better than an error from trying to serialize None or something 
+            # like that.
+            logerr("get_cpu_temps(): architecture unsupported.")
+            return (float("NaN"), [])
     except: #there is a lot of stuff that can break in the above block...
         logerr("unable to get CPU temperature data")
         return (float("NaN"), []) #was previously None; had to be changed because it must be serializable as a float.
@@ -163,6 +171,7 @@ def cpu_monitor():
 
     #since the temperature-getting seems likely to be failure prone, try it once to check.
     able_to_get_temps = True
+
     if(isnan(get_cpu_temps(architecture)[0])):
         logwarn("Unable to get CPU temperatures")
         able_to_get_temps = False
