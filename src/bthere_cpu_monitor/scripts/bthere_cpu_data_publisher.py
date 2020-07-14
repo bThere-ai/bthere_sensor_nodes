@@ -5,6 +5,7 @@
 
 from rospy import init_node, loginfo, logerr, logwarn, ROSInterruptException, Publisher, Rate, is_shutdown, get_param, Time
 from bthere_cpu_monitor.msg import CPUData
+from std_msgs.msg import Header
 from os import listdir
 from platform import uname
 from glob import glob
@@ -181,6 +182,7 @@ def cpu_monitor():
         data = CPUData()
         gated_loginfo(quiet, "------ CPU Data ------")
         if(able_to_get_temps):
+            # If temperature data can be collected, add it to the CPUData to be published and log
             package_temp, core_temps = get_cpu_temps(architecture)
             gated_loginfo(quiet, "CPU Package temp. (C): " + str(package_temp))
             data.package_temp = package_temp
@@ -189,11 +191,15 @@ def cpu_monitor():
                     gated_loginfo(quiet, "CPU Core " + str(core) + "temp. (C): " + str(core_temps[core]))
             data.core_temps = core_temps
         else:
-            #data is unavailable so just make it NaN
+            # If the data is unavailable just publish NaN and log
             gated_loginfo(quiet, "CPU temperatures unavailable")
             data.package_temp = float("NaN")
             data.core_temps = [float("NaN")]
-        if(len(last_cpu_times) == 0): #if this hasn't been initialized, we just won't publish this info yet.
+        if(len(last_cpu_times) == 0): 
+            # If this hasn't been initialized, we just won't publish this info yet and init.
+            # last_cpu_times can't just be initialized before the loop because it should (for consistency) be the same
+            # time between data collections and getting the initial data before the loop would make the time between
+            # data collections small and potentially make the data misleading due to burst loads.
             last_cpu_times = get_load_data()
             gated_loginfo(quiet, "CPU load not yet available")
         else:
@@ -205,7 +211,14 @@ def cpu_monitor():
                     gated_loginfo(quiet, "CPU core " + str(core) + " load: " + str(round(per_cores[core] * 100, 1)) + 
                                     "%")
             data.core_loads = per_cores
-        data.timestamp = Time.now()
+        
+        # Add the header information:
+        header = Header(stamp=Time.now())
+        # The frame_id property seems to be to do with tf frames of reference. That isn't useful for something like 
+        # this, so just leave it empty. (this might be the wrong way to do this, but I don't have any other info.)
+        # The sequential id is apparently set by the publisher.
+        data.header = header
+        
         pub.publish(data)
         rate.sleep()
 

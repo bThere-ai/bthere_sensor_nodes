@@ -1,4 +1,4 @@
-time timestamp
+Header header
 
 #0-1, where 1 is 100% load and 0 is completely idle.
 float32 overall_cpu_load 
