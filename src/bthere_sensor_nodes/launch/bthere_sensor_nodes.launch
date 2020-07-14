@@ -1,4 +1,5 @@
 <launch>
   <include file="$(find bthere_wifi_signal_monitor)/launch/bthere_wifi_signal_monitor.launch" />
   <include file="$(find bthere_battery_state_monitor)/launch/bthere_battery_state_monitor.launch" />
+  <include file="$(find bthere_cpu_monitor)/launch/bthere_cpu_monitor.launch" />
 </launch>
