@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-from rospy import init_node, loginfo, logerr, get_param, Publisher, Rate, is_shutdown, ROSInterruptException
+from rospy import init_node, loginfo, logerr, get_param, Publisher, Rate, is_shutdown, ROSInterruptException, Time
 import os
-from std_msgs.msg import Int32
+from std_msgs.msg import Header
+from bthere_wifi_signal_monitor.msg import WifiData
 import sys
 
 test_wifi_values = [-90, -80, -72, -60, -46]
@@ -13,7 +14,11 @@ def publish(pub, signal_level, quiet):
     if (not quiet):
         loginfo('---------- Wifi Signal ------------')
         loginfo('Signal Level: ' + str(signal_level) + ' dBm')
-    pub.publish(int(signal_level))
+    toPublish = WifiData()
+    toPublish.data = int(signal_level)
+    toPublish.header = Header(stamp = Time.now())
+    #sequential id is automatically set, frame id doesn't matter for this 
+    pub.publish(toPublish)
 
 
 def output_wifi(rate, pub, quiet):
@@ -54,7 +59,7 @@ def output_test_data(rate, pub, quiet):
 
 def wifi_signal_monitor():
     init_node('bthere_wifi_signal_monitor', anonymous=False)
-    pub = Publisher('/bthere/wifi_signal', Int32, queue_size=10)
+    pub = Publisher('/bthere/wifi_signal', WifiData, queue_size=10)
     loginfo('Outputting to /bthere/wifi_signal')
     test_output = get_param('~test_output', False)
     update_period = get_param('~update_period', 15.0)
