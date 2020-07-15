@@ -22,9 +22,16 @@ def output_wifi(rate, pub, quiet):
     # Get the active network connection
     cmd_output = os.popen('nmcli dev status').read()
     lines = cmd_output.splitlines()
+    has_found_wifi = False
     for line in lines:
         if (line.find('wifi') != -1) and (line.find('connected') != -1):
+            has_found_wifi = True
             interface = line.split()[0]
+    # Without this check, the script will crash on the next line (cmd_output = ...) if there isn't a wifi device without
+    # a clear error message.
+    if(not has_found_wifi):
+        logerr("No wifi device found.")
+        return
 
     # Get the signal level
     cmd_output = os.popen('iwconfig ' + interface).read()
