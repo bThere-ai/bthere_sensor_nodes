@@ -72,7 +72,7 @@ def get_cpu_temps(architecture):
             temperature_file.close()
             return (temperature, [])
         else: 
-            # This should be unreachable because of the architecture chech in cpu_monitor(), but just in case things 
+            # This should be unreachable because of the architecture check in cpu_monitor(), but just in case things 
             # break this happens, an error message is better than an error from trying to serialize None or something 
             # like that.
             logerr("get_cpu_temps(): architecture unsupported.")
@@ -104,7 +104,7 @@ def get_cpu_load(last_cpu_times):
         difference = []
         for i in range(0, len(last_cpu_times[0])):
             difference.append(int(new_cpu_times[line_index][i]) - int(last_cpu_times[line_index][i]))
-        idle = float(difference[3]) / float(sum(difference)) # %/100 of time since startup spent in an "idle" state
+        idle = float(difference[3]) / float(sum(difference))
         load = 1 - idle # %/100 of time since the last data was collected spent not idle, i.e. CPU load.
         if(line_index == 0):
             #note: rounding removed because it seemed that a lot of error would arise when actually sending and 
