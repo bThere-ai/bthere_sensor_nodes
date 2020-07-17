@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-from rospy import init_node, loginfo, logerr, get_param, Publisher, Rate, is_shutdown, ROSInterruptException, Duration
+from rospy import init_node, loginfo, logerr, get_param, Publisher, Rate, is_shutdown, ROSInterruptException, Duration, Time
 from sensor_msgs.msg import BatteryState
+from std_msgs.msg import Header
 import os
 import sys
 
@@ -239,6 +240,8 @@ def battery_level_monitor():
                 battery_state.location = get_battery_path(cmd_output)
                 battery_state.serial_number = get_battery_serial_number(
                     cmd_output)
+                # Sequential ID is set automatically by publisher, frame_id isn't necessary for this.
+                battery_state.header = Header(stamp=Time.now())
 
                 gated_loginfo(quiet, '------ Battery State --------------')
                 gated_loginfo(quiet, 'Voltage (V): %f' % battery_state.voltage)
