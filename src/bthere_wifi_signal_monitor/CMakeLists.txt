@@ -10,7 +10,7 @@ project(bthere_wifi_signal_monitor)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
-  message_generation
+  # message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -47,10 +47,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  WifiData.msg
-)
+# add_message_files(
+#   FILES
+#   WifiData.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +67,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -105,7 +105,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES wifi_signal_monitor
 #  CATKIN_DEPENDS rospy std_msgs
-  CATKIN_DEPENDS message_runtime
+  # CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
@@ -160,7 +160,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  scripts/bthere_wifi_signal_data_publisher.py
+  scripts/bthere_wifi_signal_monitor.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -188,7 +188,7 @@ catkin_install_python(PROGRAMS
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
   launch/bthere_wifi_signal_monitor.launch
-  msg/WifiData.msg
+  # msg/WifiData.msg
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

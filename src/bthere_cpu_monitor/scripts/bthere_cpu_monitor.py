@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-#renamed from bthere_cpu_monitor.py because of package name conflict
-#in the CPUData message import.
-
 from rospy import init_node, loginfo, logerr, logwarn, ROSInterruptException, Publisher, Rate, is_shutdown, get_param, Time
-from bthere_cpu_monitor.msg import CPUData
+from bthere_sensor_msgs.msg import CPUData
 from std_msgs.msg import Header
 from os import listdir
 from platform import uname
