@@ -2,7 +2,7 @@
 from rospy import init_node, loginfo, logerr, get_param, Publisher, Rate, is_shutdown, ROSInterruptException, Time
 import os
 from std_msgs.msg import Header
-from bthere_wifi_signal_monitor.msg import WifiData
+from bthere_sensor_msgs.msg import WifiData
 import sys
 
 test_wifi_values = [-90, -80, -72, -60, -46]
