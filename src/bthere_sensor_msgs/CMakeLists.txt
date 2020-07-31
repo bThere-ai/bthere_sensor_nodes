@@ -50,6 +50,7 @@ add_message_files(
   FILES
   CPUData.msg
   WifiData.msg
+  NetworkData.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -189,6 +190,7 @@ include_directories(
 install(FILES
   msg/CPUData.msg
   msg/WifiData.msg
+  msg/NetworkData.msg
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
