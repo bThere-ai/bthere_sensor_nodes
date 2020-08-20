@@ -1,0 +1,6 @@
+<launch>
+  <arg name="bthere_network_update_period" default="10.0" />
+  <node name="bthere_network_monitor" pkg="bthere_network_monitor" type="bthere_network_monitor.py" output="screen">
+    <param name="update_period" value="$(arg bthere_network_update_period)" />
+  </node>
+</launch>
