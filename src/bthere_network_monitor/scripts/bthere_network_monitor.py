@@ -7,6 +7,7 @@ from std_msgs.msg import Header
 
 #set to specify unit of published upload/download rate. 1000 for KB/s, 1000000 for MB/s, etc.
 RATE_UNIT_SCALAR = 1000
+RATE_UNIT = 'kB/s'
 
 # Ignore loopback.
 # Add other interfaces you don't want data from to this.
@@ -74,7 +75,7 @@ def network_monitor():
     pub = Publisher("/bthere/network_data", NetworkData, queue_size=10)
     loginfo("Outputting to /bthere/network_data")
 
-    update_period = get_param('~update_period', 10.0)
+    update_period = get_param('~update_period', 5.0)
     rate = Rate(1/float(update_period))
     loginfo("Publishing rate: " + str(1.0/update_period) + " hz")
 
@@ -96,7 +97,7 @@ def network_monitor():
 
             message = NetworkData()
 
-            gated_loginfo(quiet, "dowload rate: " + str(data["RX_RATE"]))
+            gated_loginfo(quiet, "dowload rate: " + str(data["RX_RATE"]) + " " + RATE_UNIT)
             message.rx_rate = data["RX_RATE"]
             gated_loginfo(quiet, "dowload packets total: " + str(data["RX_PACKETS"]))
             message.rx_packets = data["RX_PACKETS"]
@@ -105,7 +106,7 @@ def network_monitor():
             gated_loginfo(quiet, "dowload packets dropped total: " + str(data["RX_DROP"]))
             message.rx_drop = data["RX_DROP"]
             
-            gated_loginfo(quiet, "upload rate: " + str(data["TX_RATE"]))
+            gated_loginfo(quiet, "upload rate: " + str(data["TX_RATE"]) + " " + RATE_UNIT)
             message.tx_rate = data["TX_RATE"]
             gated_loginfo(quiet, "upload packets total: " + str(data["TX_PACKETS"]))
             message.tx_packets = data["TX_PACKETS"]
